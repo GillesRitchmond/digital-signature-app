@@ -25,7 +25,7 @@ export default function SignatureElectronique() {
   const [token, setToken] = useState<string | null>(null);
 
   const handleNextStep = () => {
-    if (step < 2) {
+    if (step < 3) {
       setStep(step + 1);
     } else {
       setIsSigned(true);
@@ -92,7 +92,6 @@ export default function SignatureElectronique() {
     e.preventDefault();
     // Convertir le tableau de digits en une chaîne
     const codeString = code.join(""); 
-    console.log(codeString);
   
     const response = await fetch("/api/verify-code", {
       method: "POST",
@@ -104,7 +103,6 @@ export default function SignatureElectronique() {
     
     if (response.ok) {
       const data = await response.json();
-      console.log(data);
       // setToken(data.token);
       await SendSign(); 
     } else {
@@ -147,13 +145,11 @@ export default function SignatureElectronique() {
         console.error("Erreur du serveur:", errorData);
       } else {
         const data = await response.json();
-        console.log("Succès:", data);
       }
     } catch (error) {
       console.error("Une erreur s'est produite lors de l'envoi de la signature:", error);
     }
   }
-  
   
   function PreviewAndInfo({ onNext }: { onNext: () => void }) {
     return (
@@ -238,6 +234,7 @@ export default function SignatureElectronique() {
         <Button
           onClick={async (e) => {
             await verifyCode(e);
+            onNext();
           }}
           className="w-full bg-green-500 hover:bg-green-600"
         >
@@ -250,12 +247,12 @@ export default function SignatureElectronique() {
   function Confirmation() {
     return (
       <div className="space-y-4 text-center">
-        <p className="text-green-600 font-semibold">
+        <p className="text-green-600 font-semibold text-left">
           Le document a été signé avec succès !
         </p>
-        <a href="#" className="text-blue-500 hover:underline">
+        {/* <a href="#" className="text-blue-500 hover:underline">
           Télécharger le document signé
-        </a>
+        </a> */}
       </div>
     );
   }
@@ -275,7 +272,7 @@ export default function SignatureElectronique() {
         <CodeValidation onNext={handleNextStep} />
         </>
       )}
-      {isSigned && (
+      {step === 3 && (
         <>
         <h2 className="text-2xl font-semibold mb-4">Confirmation</h2>
         <Confirmation />
