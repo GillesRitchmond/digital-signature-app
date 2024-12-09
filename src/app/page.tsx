@@ -23,7 +23,8 @@ export default function SignatureElectronique() {
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [token, setToken] = useState<string | null>(null);
-
+  const [loading, setLoading] = useState(false);
+    
   const handleNextStep = () => {
     if (step < 3) {
       setStep(step + 1);
@@ -122,7 +123,7 @@ export default function SignatureElectronique() {
       const ip = await getIpAddress(); // Vérifie que cette fonction est définie comme dans l'exemple ci-dessus.
       
       // Vérifie que nom, prenom, email, token sont définis
-      console.log(nom, prenom, email);
+      
       if (!nom || !prenom || !email) {
         console.error("Certaines informations (nom, prénom, email, token) sont manquantes.");
         return;
@@ -155,7 +156,7 @@ export default function SignatureElectronique() {
     return (
       <div className="space-y-4 w-full">
         <div className="border rounded-lg p-4 bg-white w-full">
-          <PDFViewer documentUrl="/Contrat.pdf" userName="John Doe" />
+          <PDFViewer documentUrl="/Contrat.pdf" userName={`${nom} ${prenom}`} />
         </div>
         <div className="flex align-items-center gap-3 w-full">
           <div className="space-y-2 w-full lg:w-1/2">
@@ -164,6 +165,7 @@ export default function SignatureElectronique() {
               id="nom"
               placeholder="Votre nom"
               value={nom}
+              autoComplete="nom"
               onChange={(e) => setNom(e.target.value)}
             />
           </div>
@@ -173,6 +175,7 @@ export default function SignatureElectronique() {
               id="prenom"
               placeholder="Votre prénom"
               value={prenom}
+              autoComplete="prenom"
               onChange={(e) => setPrenom(e.target.value)}
             />
           </div>
@@ -184,17 +187,21 @@ export default function SignatureElectronique() {
             type="email"
             placeholder="votre@email.com"
             value={email}
+            autoComplete="email"
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <Button
           onClick={async (e) => {
+            setLoading(true);
             await sendVerificationCode(e);
+            setLoading(false);
             onNext();
           }}
           className="w-full"
+          disabled={loading}
         >
-          Envoyer le code
+          {loading ? "Envoi en cours..." : "Envoyer le code"}
         </Button>
       </div>
     );
@@ -211,34 +218,37 @@ export default function SignatureElectronique() {
         <div className="mt-2 relative">
           <div className="flex justify-start items-center w-full space-x-3">
             {code.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => {
-              inputs.current[index] = el;
-              if (el && digit === "" && inputs.current.findIndex(input => input === document.activeElement) === -1) {
-                el.focus();
-              }
-              }}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              onPaste={handlePaste}
-              className="w-12 h-12 text-center text-lg font-semibold border rounded-md dark:bg-background dark:border-foreground dark:text-foreground"
-            />
+              <input
+                key={index}
+                ref={(el) => {
+                  inputs.current[index] = el;
+                  if (el && digit === "" && inputs.current.findIndex(input => input === document.activeElement) === -1) {
+                    el.focus();
+                  }
+                }}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
+                className="w-12 h-12 text-center text-lg font-semibold border rounded-md dark:bg-background dark:border-foreground dark:text-foreground"
+              />
             ))}
           </div>
         </div>
         <Button
           onClick={async (e) => {
+            setLoading(true);
             await verifyCode(e);
+            setLoading(false);
             onNext();
           }}
           className="w-full bg-green-500 hover:bg-green-600"
+          disabled={loading}
         >
-          Signer électroniquement
+          {loading ? "Signature en cours"  : "Signer électroniquement"}
         </Button>
       </div>
     );
@@ -250,9 +260,6 @@ export default function SignatureElectronique() {
         <p className="text-green-600 font-semibold text-left">
           Le document a été signé avec succès !
         </p>
-        {/* <a href="#" className="text-blue-500 hover:underline">
-          Télécharger le document signé
-        </a> */}
       </div>
     );
   }
@@ -262,20 +269,20 @@ export default function SignatureElectronique() {
       <div className="w-full max-w-lg">
       {step === 1 && (
         <>
-        <h2 className="text-2xl font-semibold mb-4">Prévisualisation et informations</h2>
-        <PreviewAndInfo onNext={handleNextStep} />
+          <h2 className="text-2xl font-semibold mb-4">Prévisualisation et informations</h2>
+          <PreviewAndInfo onNext={handleNextStep} />
         </>
       )}
       {step === 2 && (
         <>
-        <h2 className="text-2xl font-semibold mb-4">Signature électronique</h2>
-        <CodeValidation onNext={handleNextStep} />
+          <h2 className="text-2xl font-semibold mb-4">Signature électronique</h2>
+          <CodeValidation onNext={handleNextStep} />
         </>
       )}
       {step === 3 && (
         <>
-        <h2 className="text-2xl font-semibold mb-4">Confirmation</h2>
-        <Confirmation />
+          <h2 className="text-2xl font-semibold mb-4">Confirmation</h2>
+          <Confirmation />
         </>
       )}
       </div>

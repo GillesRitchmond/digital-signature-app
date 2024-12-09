@@ -21,8 +21,6 @@ export async function POST(req: NextRequest) {
 
     // const signature = nomPrenom.split(" ").map((word: string) => word[0]).join(""); // Génère une signature à partir des initiales
     const signature = nomPrenom; // Utilise le nom complet comme signature
-    console.log(currentDate);
-    console.log(uniqueID, nomPrenom, email, ipAddress, signature, currentDate);
 
     const pdfPath = path.join(process.cwd(), "public", "Contrat.pdf");
     const pdfBytes = fs.readFileSync(pdfPath);
